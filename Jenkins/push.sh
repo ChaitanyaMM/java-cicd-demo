@@ -4,11 +4,12 @@ echo "********************"
 echo "** Pushing image ***"
 echo "********************"
 
-IMAGE="maven-project"
+IMAGE="java-cicd-demo"
 
 echo "** Logging in ***"
-docker login -u ricardoandre97 -p $PASS
+docker login -u chaitu465 -p $PASS
+docker build -t chaitu465/$IMAGE:$BUILD_TAG .
 echo "*** Tagging image ***"
-docker tag $IMAGE:$BUILD_TAG ricardoandre97/$IMAGE:$BUILD_TAG
+docker tag $IMAGE:$BUILD_TAG chaitu465/$IMAGE:$BUILD_TAG
 echo "*** Pushing image ***"
-docker push ricardoandre97/$IMAGE:$BUILD_TAG
+docker push chaitu465/$IMAGE:$BUILD_TAG
