@@ -1,4 +1,10 @@
 #!/bin/bash
 
-docker login -u ricardoandre97 -p $PASS
-cd ~/maven && docker-compose up -d
+
+IMAGE="java-cicd-demo"
+
+ssh -i $aws_kv ubuntu@ec2-3-6-94-212.ap-south-1.compute.amazonaws.com
+mkdir chaitanya && cd
+docker login -u chaitu465 -p $PASS
+docker pull chaitu465/$IMAGE:$BUILD_TAG
+
