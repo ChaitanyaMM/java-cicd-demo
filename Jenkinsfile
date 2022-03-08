@@ -2,49 +2,60 @@ pipeline {
 
     agent any
     
-    environment {
-        PASS = credentials('registry-pass') 
-    }
+    environment{
+   
+      workspacePath='/home/chaitanya/.jenkins/workspace'
+      projectName='java-cicd-demo'
+      gitCredentials=credentials('GitCredentials')
+      pass =credentials('dockerPassword')
+      aws_kv=credentials('aws-ec2')
+      jfrog_server_name=credentials('jfrog-server-name')
+      JFROG_USERNAME=credentials('jfrog-username')
+      JFROG_PASS=credentials('jfrog-password')
+   
+     }
+    
 
     stages {
 
         stage('Build') {
             steps {
-                sh '''
-                    ./jenkins/build/mvn.sh mvn -B -DskipTests clean package
-                    ./jenkins/build/build.sh
-                '''
-            }
+                echo 'cloning app ! ...'
+                checkout([
+                          $class: 'GitSCM', branches: [[name: '*/main']],
+                          userRemoteConfigs: [[url: 'https://github.com/ChaitanyaMM/java-cicd-demo-app.git',credentialsId: '$gitCredentials']]
+                        ])
+                echo 'building project'
+                sh '''/home/chaitanya/.jenkins/workspace/java-cicd-demo/Jenkins/build.sh '''
 
-            post {
-                success {
-                   archiveArtifacts artifacts: 'java-app/target/*.jar', fingerprint: true
-                }
+
             }
         }
-
-        stage('Test') {
+        
+        
+        stage('dockerBuild') {
             steps {
-                sh './jenkins/test/mvn.sh mvn test'
-            }
-
-            post {
-                always {
-                    junit 'java-app/target/surefire-reports/*.xml'
-                }
+                echo 'building project'
+                sh '''/home/chaitanya/.jenkins/workspace/java-cicd-demo/Jenkins/push.sh '''
             }
         }
-
-        stage('Push') {
+        
+        stage('artifactory') {
             steps {
-                sh './jenkins/push/push.sh'
+                echo 'pushing image to jfrog'
+                sh '''/home/chaitanya/.jenkins/workspace/java-cicd-demo/Jenkins/jfrog.sh '''
             }
         }
-
-        stage('Deploy') {
+        
+       stage('deploy-aws') {
             steps {
-                sh './jenkins/deploy/deploy.sh'
+                echo 'deploying project'
+                sh '''/home/chaitanya/.jenkins/workspace/java-cicd-demo/Jenkins/deploy.sh '''
             }
         }
-    }
+  
+  }
+ 
+      
 }
+
